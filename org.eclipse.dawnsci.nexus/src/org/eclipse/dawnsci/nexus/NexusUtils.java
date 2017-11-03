@@ -10,9 +10,13 @@
 
 package org.eclipse.dawnsci.nexus;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.dawnsci.analysis.api.tree.Attribute;
 import org.eclipse.dawnsci.analysis.api.tree.DataNode;
@@ -543,4 +547,52 @@ public class NexusUtils {
 	public static int[] estimateChunking(int[] expectedMaxShape, int dataByteSize) {
 		return estimateChunking(expectedMaxShape, dataByteSize, null, DEFAULT_CHUNK_STRATEGY);
 	}
+
+	/**
+	 * 
+	 * @param path
+	 * @return true if file is HDF5
+	 */
+	public static boolean isHDF5(final String path) {
+		String absolutePath;
+		try {
+			absolutePath = canonicalisePath(path);
+		} catch (IOException e) {
+			return false;
+		}
+		// We guess based on extension
+		final String lowPath = absolutePath.toLowerCase();
+		for (String ext : EXT) {
+			if (lowPath.endsWith(ext))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Canonicalise path so that we can use it as a standard key
+	 * @param absolutePath
+	 * @return
+	 * @throws IOException
+	 */
+	public static String canonicalisePath(String absolutePath) throws IOException {
+		try {
+			return new File(absolutePath).getCanonicalPath();
+		} catch (IOException e) {
+			throw e;
+		}
+	}
+
+	public final static List<String> EXT;
+	static {
+		List<String> tmp = new ArrayList<String>(7);
+		tmp.add("h5");
+		tmp.add("nxs");
+		tmp.add("hd5");
+		tmp.add("hdf5");
+		tmp.add("hdf");
+		tmp.add("nexus");
+		EXT = Collections.unmodifiableList(tmp);
+	}
+
 }
